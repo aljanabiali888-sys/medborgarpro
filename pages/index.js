@@ -71,15 +71,8 @@ export default function Home() {
         </header>
 
         {/* Free Test Button */}
-        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-          <button 
-  style={{ padding: '15px 30px', background: '#fff', color: '#2563eb', border: '2px solid #2563eb', borderRadius: '50px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1.1rem', boxShadow: '0 4px 6px rgba(37, 99, 235, 0.1)' }}
-  onClick={() => alert('سيتم فتح الاختبار المجاني المكون من 20 سؤالاً الآن!')}
->
-  ✓ {freeTest}
-</button>
+       <div style={{ textAlign: 'center', marginBottom: '40px' }}><a href="#" onClick={(e) => { e.preventDefault(); alert('جاري فتح الاختبار المجاني...'); }} style={{ display: 'inline-block', padding: '15px 30px', background: '#fff', color: '#2563eb', border: '2px solid #2563eb', borderRadius: '50px', fontWeight: 'bold', fontSize: '1.1rem', textDecoration: 'none', boxShadow: '0 4px 6px rgba(37, 99, 235, 0.1)' }}>✓ {freeTest}</a></div>
 
-        </div>
 
         {/* Chapters Section */}
         <section>
