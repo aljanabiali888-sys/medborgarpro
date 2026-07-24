@@ -72,9 +72,13 @@ export default function Home() {
 
         {/* Free Test Button */}
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-          <button style={{ padding: '15px 30px', background: '#fff', color: '#2563eb', border: '2px solid #2563eb', borderRadius: '50px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1.1rem', boxShadow: '0 4px 6px rgba(37, 99, 235, 0.1)' }}>
-            ✓ {freeTest}
-          </button>
+          <button 
+  style={{ padding: '15px 30px', background: '#fff', color: '#2563eb', border: '2px solid #2563eb', borderRadius: '50px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1.1rem', boxShadow: '0 4px 6px rgba(37, 99, 235, 0.1)' }}
+  onClick={() => alert('سيتم فتح الاختبار المجاني المكون من 20 سؤالاً الآن!')}
+>
+  ✓ {freeTest}
+</button>
+
         </div>
 
         {/* Chapters Section */}
