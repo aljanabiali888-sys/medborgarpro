@@ -19,13 +19,11 @@ export default function Dashboard() {
       title: 'لوحة التحكم | MedborgarPro',
       header: 'لوحة التحكم',
       backHome: '← الرئيسية',
-      welcome: 'مرحباً بك',
       accountInfo: 'معلومات الحساب',
       emailLabel: 'البريد الإلكتروني:',
       statusLabel: 'حالة الاشتراك:',
       activeStatus: '✅ نشط (وصول كامل لمدة شهر)',
       inactiveStatus: '❌ غير نشط / منتهي',
-      expiresAt: 'ينتهي الاشتراك بتاريخ:',
       subPrompt: 'اشترك الآن للحصول على وصول كامل لمدة شهر (30 يوماً)',
       subDesc: 'احصل على كافة الأسئلة والدروس واختبارات المحاكاة للتحضير لاختبار المواطنة السويدية.',
       payBtn: 'تفعيل الاشتراك لمدة شهر 💳',
@@ -49,13 +47,11 @@ export default function Dashboard() {
       title: 'Instrumentpanel | MedborgarPro',
       header: 'Instrumentpanel',
       backHome: '← Hem',
-      welcome: 'Välkommen',
       accountInfo: 'Konto-information',
       emailLabel: 'E-postadress:',
       statusLabel: 'Prenumerationsstatus:',
       activeStatus: '✅ Aktiv (Full tillgång i 1 månad)',
       inactiveStatus: '❌ Inaktiv / Utgången',
-      expiresAt: 'Går ut den:',
       subPrompt: 'Prenumerera nu för full tillgång i 1 månad (30 dagar)',
       subDesc: 'Få tillgång till alla frågor, lektioner och övningsprov för det svenska medborgarskapstestet.',
       payBtn: 'Aktivera prenumeration (1 månad) 💳',
@@ -85,11 +81,10 @@ export default function Dashboard() {
       return
     }
     
-    // تسجيل الدخول
+    // حفظ المستخدم المسجل
     setCurrentUser({
       email: email,
-      isSubscribed: false,
-      subscriptionEndDate: null
+      isSubscribed: false
     })
     setIsLoggedIn(true)
   }
@@ -109,9 +104,10 @@ export default function Dashboard() {
 
       <div style={{ maxWidth: '650px', margin: '30px auto', padding: '20px', fontFamily: 'sans-serif', direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
         
-        {/* Top Header & Language Switcher */}
+        {/* Header Control */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
           <button 
+            type="button"
             onClick={() => window.location.href = '/'}
             style={{ padding: '8px 16px', background: '#e2e8f0', color: '#2d3748', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
           >
@@ -120,6 +116,7 @@ export default function Dashboard() {
 
           <div style={{ background: '#edf2f7', padding: '4px', borderRadius: '10px' }}>
             <button
+              type="button"
               onClick={() => setLang('ar')}
               style={{
                 padding: '6px 14px',
@@ -134,6 +131,7 @@ export default function Dashboard() {
               العربية
             </button>
             <button
+              type="button"
               onClick={() => setLang('sv')}
               style={{
                 padding: '6px 14px',
@@ -152,7 +150,7 @@ export default function Dashboard() {
 
         <h1 style={{ marginBottom: '25px', color: '#1a202c', textAlign: 'center' }}>{t.header}</h1>
 
-        {/* 1. إذا لم يكن المستخدم مسجلاً لدخوله -> إظهار نموذج التسجيل / الدخول */}
+        {/* 1. نموذج الدخول / التسجيل */}
         {!isLoggedIn ? (
           <div style={{ background: '#fff', padding: '35px 25px', borderRadius: '16px', boxShadow: '0 10px 25px rgba(0,0,0,0.05)', border: '1px solid #edf2f7' }}>
             <h2 style={{ fontSize: '1.3rem', color: '#2d3748', marginBottom: '20px', textAlign: 'center' }}>
@@ -196,27 +194,34 @@ export default function Dashboard() {
               {authMode === 'login' ? (
                 <>
                   {t.noAccount}{' '}
-                  <button onClick={() => setAuthMode('signup')} style={{ background: 'none', border: 'none', color: '#2563eb', fontWeight: 'bold', cursor: 'pointer', textDecoration: 'underline' }}>
+                  <span 
+                    onClick={() => setAuthMode('signup')} 
+                    style={{ color: '#2563eb', fontWeight: 'bold', cursor: 'pointer', textDecoration: 'underline' }}
+                  >
                     {t.createOne}
-                  </button>
+                  </span>
                 </>
               ) : (
                 <>
                   {t.hasAccount}{' '}
-                  <button onClick={() => setAuthMode('login')} style={{ background: 'none', border: 'none', color: '#2563eb', fontWeight: 'bold', cursor: 'pointer', textDecoration: 'underline' }}>
+                  <span 
+                    onClick={() => setAuthMode('login')} 
+                    style={{ color: '#2563eb', fontWeight: 'bold', cursor: 'pointer', textDecoration: 'underline' }}
+                  >
                     {t.loginHere}
-                  </button>
+                  </span>
                 </>
               )}
             </div>
           </div>
         ) : (
-          /* 2. إذا كان المستخدم مسجلاً لدخوله -> إظهار معلومات الحساب وحالة الاشتراك */
+          /* 2. بعد تسجيل الدخول */
           <div>
             <div style={{ background: '#fff', padding: '25px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', border: '1px solid #edf2f7', marginBottom: '20px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
                 <h2 style={{ fontSize: '1.2rem', color: '#2d3748', margin: 0 }}>{t.accountInfo}</h2>
                 <button 
+                  type="button"
                   onClick={handleLogout}
                   style={{ padding: '6px 12px', background: '#fff5f5', color: '#e53e3e', border: '1px solid #feb2b2', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
                 >
@@ -239,6 +244,7 @@ export default function Dashboard() {
               <p style={{ color: '#718096', marginBottom: '20px', lineHeight: '1.5' }}>{t.subDesc}</p>
               
               <button 
+                type="button"
                 onClick={() => window.location.href = t.stripeUrl}
                 style={{ width: '100%', padding: '14px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '1.05rem', fontWeight: 'bold', cursor: 'pointer' }}
               >
