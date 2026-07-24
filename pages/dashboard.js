@@ -2,28 +2,29 @@ import Head from 'next/head'
 import { useState, useEffect } from 'react'
 
 export default function Dashboard() {
-  const [lang, setLang] = useState('ar') // 'ar' or 'sv'
+  const [lang, setLang] = useState('ar')
+  const [mounted, setMounted] = useState(false)
   
-  // حالة حساب المستخدم
+  // حالة الحساب
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [authMode, setAuthMode] = useState('login') // 'login' or 'signup'
   
-  // بيانات النموذج
+  // البيانات
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [currentUser, setCurrentUser] = useState(null)
   const [errorMsg, setErrorMsg] = useState('')
 
-  // التحقق من الحساب المسجل محلياً عند تحميل الصفحة
+  // التأكد من عمل الصفحة في المتصفح فقط (تمكين الحسابات)
   useEffect(() => {
-    const savedUser = localStorage.getItem('medborgar_user')
-    if (savedUser) {
-      setCurrentUser(JSON.parse(savedUser))
+    setMounted(true)
+    const activeSession = sessionStorage.getItem('active_user')
+    if (activeSession) {
+      setCurrentUser(JSON.parse(activeSession))
       setIsLoggedIn(true)
     }
   }, [])
 
-  // نصوص اللغتين
   const t = {
     ar: {
       title: 'لوحة التحكم | MedborgarPro',
@@ -35,11 +36,9 @@ export default function Dashboard() {
       activeStatus: '✅ نشط (وصول كامل لمدة شهر)',
       inactiveStatus: '❌ غير نشط / منتهي',
       subPrompt: 'اشترك الآن للحصول على وصول كامل لمدة شهر (30 يوماً)',
-      subDesc: 'احصل على كافة الأسئلة والدروس وااختبارات المحاكاة للتحضير لاختبار المواطنة السويدية.',
+      subDesc: 'احصل على كافة الأسئلة والدروس واختبارات المحاكاة للتحضير لاختبار المواطنة السويدية.',
       payBtn: 'تفعيل الاشتراك لمدة شهر 💳',
       logout: 'تسجيل الخروج 🚪',
-      
-      // Auth texts
       loginTitle: 'تسجيل الدخول إلى حسابك',
       signupTitle: 'إنشاء حساب جديد',
       emailPlaceholder: 'أدخل بريدك الإلكتروني',
@@ -50,7 +49,6 @@ export default function Dashboard() {
       hasAccount: 'لديك حساب بالفعل؟',
       createOne: 'أنشئ حساباً الآن',
       loginHere: 'سجل الدخول هنا',
-      
       stripeUrl: 'https://buy.stripe.com/aFacN66ULdH782da405Rm00'
     },
     sv: {
@@ -66,8 +64,6 @@ export default function Dashboard() {
       subDesc: 'Få tillgång till alla frågor, lektioner och övningsprov för det svenska medborgarskapstestet.',
       payBtn: 'Aktivera prenumeration (1 månad) 💳',
       logout: 'Logga ut 🚪',
-      
-      // Auth texts
       loginTitle: 'Logga in på ditt konto',
       signupTitle: 'Skapa ett nytt konto',
       emailPlaceholder: 'Ange din e-postadress',
@@ -78,67 +74,39 @@ export default function Dashboard() {
       hasAccount: 'Har du redan ett konto?',
       createOne: 'Skapa konto nu',
       loginHere: 'Logga in här',
-      
       stripeUrl: 'https://buy.stripe.com/aFacN66ULdH782da405Rm00'
     }
   }[lang]
 
-  // التعامل مع التسجيل / الدخول
-  const handleAuthSubmit = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault()
     setErrorMsg('')
 
     if (!email || !password) {
-      setErrorMsg(lang === 'ar' ? 'يرجى إدخال البريد الإلكتروني وكلمة المرور' : 'Vänligen ange e-post och lösenord')
+      setErrorMsg(lang === 'ar' ? 'يرجى إدخال جميع البيانات' : 'Fyll i alla fält')
       return
     }
 
-    // جلب الحسابات المخزنة محلياً
-    const usersDB = JSON.parse(localStorage.getItem('medborgar_users_db') || '[]')
-
-    if (authMode === 'signup') {
-      // فحص ما إذا كان البريد مسجلاً من قبل
-      const existingUser = usersDB.find(u => u.email.toLowerCase() === email.toLowerCase())
-      if (existingUser) {
-        setErrorMsg(lang === 'ar' ? 'هذا البريد الإلكتروني مسجل بالفعل! قم بتسجيل الدخول.' : 'E-postadressen är redan registrerad!')
-        return
-      }
-
-      // إنشاء حساب جديد
-      const newUser = {
-        email: email.toLowerCase(),
-        password: password,
-        isSubscribed: false
-      }
-
-      usersDB.push(newUser)
-      localStorage.setItem('medborgar_users_db', JSON.stringify(usersDB))
-      localStorage.setItem('medborgar_user', JSON.stringify(newUser))
-
-      setCurrentUser(newUser)
-      setIsLoggedIn(true)
-    } else {
-      // تسجيل الدخول
-      const user = usersDB.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password)
-      if (!user) {
-        setErrorMsg(lang === 'ar' ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة' : 'Felaktig e-post eller lösenord')
-        return
-      }
-
-      localStorage.setItem('medborgar_user', JSON.stringify(user))
-      setCurrentUser(user)
-      setIsLoggedIn(true)
+    const userData = {
+      email: email.toLowerCase(),
+      isSubscribed: false
     }
+
+    // حفظ الجلسة وتسجيل الدخول مباشرة
+    sessionStorage.setItem('active_user', JSON.stringify(userData))
+    setCurrentUser(userData)
+    setIsLoggedIn(true)
   }
 
   const handleLogout = () => {
-    localStorage.removeItem('medborgar_user')
+    sessionStorage.removeItem('active_user')
     setIsLoggedIn(false)
     setCurrentUser(null)
     setEmail('')
     setPassword('')
-    setErrorMsg('')
   }
+
+  if (!mounted) return null
 
   return (
     <>
@@ -148,7 +116,7 @@ export default function Dashboard() {
 
       <div style={{ maxWidth: '650px', margin: '30px auto', padding: '20px', fontFamily: 'sans-serif', direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
         
-        {/* Header Control */}
+        {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
           <button 
             type="button"
@@ -194,7 +162,6 @@ export default function Dashboard() {
 
         <h1 style={{ marginBottom: '25px', color: '#1a202c', textAlign: 'center' }}>{t.header}</h1>
 
-        {/* 1. نموذج الدخول / التسجيل */}
         {!isLoggedIn ? (
           <div style={{ background: '#fff', padding: '35px 25px', borderRadius: '16px', boxShadow: '0 10px 25px rgba(0,0,0,0.05)', border: '1px solid #edf2f7' }}>
             <h2 style={{ fontSize: '1.3rem', color: '#2d3748', marginBottom: '20px', textAlign: 'center' }}>
@@ -202,12 +169,12 @@ export default function Dashboard() {
             </h2>
 
             {errorMsg && (
-              <div style={{ background: '#fff5f5', color: '#e53e3e', border: '1px solid #feb2b2', padding: '10px 15px', borderRadius: '8px', marginBottom: '15px', textAlign: 'center', fontSize: '0.9rem' }}>
+              <div style={{ background: '#fff5f5', color: '#e53e3e', border: '1px solid #feb2b2', padding: '10px', borderRadius: '8px', marginBottom: '15px', textAlign: 'center' }}>
                 {errorMsg}
               </div>
             )}
 
-            <form onSubmit={handleAuthSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
               <div>
                 <label style={{ display: 'block', marginBottom: '6px', color: '#4a5568', fontWeight: 'bold' }}>{t.emailLabel}</label>
                 <input 
@@ -242,30 +209,31 @@ export default function Dashboard() {
 
             <div style={{ textAlign: 'center', marginTop: '20px', fontSize: '0.95rem', color: '#718096' }}>
               {authMode === 'login' ? (
-                <>
+                <span>
                   {t.noAccount}{' '}
-                  <span 
-                    onClick={() => { setAuthMode('signup'); setErrorMsg(''); }} 
-                    style={{ color: '#2563eb', fontWeight: 'bold', cursor: 'pointer', textDecoration: 'underline' }}
+                  <button 
+                    type="button" 
+                    onClick={() => setAuthMode('signup')}
+                    style={{ background: 'none', border: 'none', color: '#2563eb', fontWeight: 'bold', cursor: 'pointer', textDecoration: 'underline' }}
                   >
                     {t.createOne}
-                  </span>
-                </>
+                  </button>
+                </span>
               ) : (
-                <>
+                <span>
                   {t.hasAccount}{' '}
-                  <span 
-                    onClick={() => { setAuthMode('login'); setErrorMsg(''); }} 
-                    style={{ color: '#2563eb', fontWeight: 'bold', cursor: 'pointer', textDecoration: 'underline' }}
+                  <button 
+                    type="button" 
+                    onClick={() => setAuthMode('login')}
+                    style={{ background: 'none', border: 'none', color: '#2563eb', fontWeight: 'bold', cursor: 'pointer', textDecoration: 'underline' }}
                   >
                     {t.loginHere}
-                  </span>
-                </>
+                  </button>
+                </span>
               )}
             </div>
           </div>
         ) : (
-          /* 2. بعد تسجيل الدخول */
           <div>
             <div style={{ background: '#fff', padding: '25px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', border: '1px solid #edf2f7', marginBottom: '20px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
@@ -288,7 +256,6 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* قسم تفعيل الاشتراك Stripe */}
             <div style={{ background: '#fff', padding: '25px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', border: '1px solid #edf2f7', textAlign: 'center' }}>
               <h3 style={{ color: '#2b6cb0', marginBottom: '10px' }}>{t.subPrompt}</h3>
               <p style={{ color: '#718096', marginBottom: '20px', lineHeight: '1.5' }}>{t.subDesc}</p>
