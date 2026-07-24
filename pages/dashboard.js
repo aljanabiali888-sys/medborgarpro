@@ -1,27 +1,18 @@
 import Head from 'next/head'
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/router'
 
 export default function Dashboard() {
+  const router = useRouter()
   const [lang, setLang] = useState('ar')
-  const [mounted, setMounted] = useState(false)
-  
-  // حالة الحساب
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [authMode, setAuthMode] = useState('login') // 'login' or 'signup'
-  
-  // البيانات
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [currentUser, setCurrentUser] = useState(null)
-  const [errorMsg, setErrorMsg] = useState('')
+  const [user, setUser] = useState(null)
 
-  // التأكد من عمل الصفحة في المتصفح فقط (تمكين الحسابات)
   useEffect(() => {
-    setMounted(true)
-    const activeSession = sessionStorage.getItem('active_user')
-    if (activeSession) {
-      setCurrentUser(JSON.parse(activeSession))
-      setIsLoggedIn(true)
+    const saved = localStorage.getItem('user_session')
+    if (!saved) {
+      router.push('/login') // إذا لم يسجل، يتجه مباشرة لصفحة الدخول
+    } else {
+      setUser(JSON.parse(saved))
     }
   }, [])
 
@@ -39,16 +30,6 @@ export default function Dashboard() {
       subDesc: 'احصل على كافة الأسئلة والدروس واختبارات المحاكاة للتحضير لاختبار المواطنة السويدية.',
       payBtn: 'تفعيل الاشتراك لمدة شهر 💳',
       logout: 'تسجيل الخروج 🚪',
-      loginTitle: 'تسجيل الدخول إلى حسابك',
-      signupTitle: 'إنشاء حساب جديد',
-      emailPlaceholder: 'أدخل بريدك الإلكتروني',
-      passwordPlaceholder: 'أدخل كلمة المرور',
-      loginBtn: 'تسجيل الدخول',
-      signupBtn: 'إنشاء الحساب',
-      noAccount: 'ليس لديك حساب؟',
-      hasAccount: 'لديك حساب بالفعل؟',
-      createOne: 'أنشئ حساباً الآن',
-      loginHere: 'سجل الدخول هنا',
       stripeUrl: 'https://buy.stripe.com/aFacN66ULdH782da405Rm00'
     },
     sv: {
@@ -64,49 +45,16 @@ export default function Dashboard() {
       subDesc: 'Få tillgång till alla frågor, lektioner och övningsprov för det svenska medborgarskapstestet.',
       payBtn: 'Aktivera prenumeration (1 månad) 💳',
       logout: 'Logga ut 🚪',
-      loginTitle: 'Logga in på ditt konto',
-      signupTitle: 'Skapa ett nytt konto',
-      emailPlaceholder: 'Ange din e-postadress',
-      passwordPlaceholder: 'Ange ditt lösenord',
-      loginBtn: 'Logga in',
-      signupBtn: 'Skapa konto',
-      noAccount: 'Har du inget konto?',
-      hasAccount: 'Har du redan ett konto?',
-      createOne: 'Skapa konto nu',
-      loginHere: 'Logga in här',
       stripeUrl: 'https://buy.stripe.com/aFacN66ULdH782da405Rm00'
     }
   }[lang]
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    setErrorMsg('')
-
-    if (!email || !password) {
-      setErrorMsg(lang === 'ar' ? 'يرجى إدخال جميع البيانات' : 'Fyll i alla fält')
-      return
-    }
-
-    const userData = {
-      email: email.toLowerCase(),
-      isSubscribed: false
-    }
-
-    // حفظ الجلسة وتسجيل الدخول مباشرة
-    sessionStorage.setItem('active_user', JSON.stringify(userData))
-    setCurrentUser(userData)
-    setIsLoggedIn(true)
-  }
-
   const handleLogout = () => {
-    sessionStorage.removeItem('active_user')
-    setIsLoggedIn(false)
-    setCurrentUser(null)
-    setEmail('')
-    setPassword('')
+    localStorage.removeItem('user_session')
+    router.push('/login')
   }
 
-  if (!mounted) return null
+  if (!user) return null
 
   return (
     <>
@@ -116,11 +64,10 @@ export default function Dashboard() {
 
       <div style={{ maxWidth: '650px', margin: '30px auto', padding: '20px', fontFamily: 'sans-serif', direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
         
-        {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
           <button 
             type="button"
-            onClick={() => window.location.href = '/'}
+            onClick={() => router.push('/')}
             style={{ padding: '8px 16px', background: '#e2e8f0', color: '#2d3748', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
           >
             {t.backHome}
@@ -131,13 +78,8 @@ export default function Dashboard() {
               type="button"
               onClick={() => setLang('ar')}
               style={{
-                padding: '6px 14px',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontWeight: 'bold',
-                background: lang === 'ar' ? '#2563eb' : 'transparent',
-                color: lang === 'ar' ? '#fff' : '#4a5568'
+                padding: '6px 14px', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold',
+                background: lang === 'ar' ? '#2563eb' : 'transparent', color: lang === 'ar' ? '#fff' : '#4a5568'
               }}
             >
               العربية
@@ -146,13 +88,8 @@ export default function Dashboard() {
               type="button"
               onClick={() => setLang('sv')}
               style={{
-                padding: '6px 14px',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontWeight: 'bold',
-                background: lang === 'sv' ? '#2563eb' : 'transparent',
-                color: lang === 'sv' ? '#fff' : '#4a5568'
+                padding: '6px 14px', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold',
+                background: lang === 'sv' ? '#2563eb' : 'transparent', color: lang === 'sv' ? '#fff' : '#4a5568'
               }}
             >
               Svenska
@@ -162,114 +99,39 @@ export default function Dashboard() {
 
         <h1 style={{ marginBottom: '25px', color: '#1a202c', textAlign: 'center' }}>{t.header}</h1>
 
-        {!isLoggedIn ? (
-          <div style={{ background: '#fff', padding: '35px 25px', borderRadius: '16px', boxShadow: '0 10px 25px rgba(0,0,0,0.05)', border: '1px solid #edf2f7' }}>
-            <h2 style={{ fontSize: '1.3rem', color: '#2d3748', marginBottom: '20px', textAlign: 'center' }}>
-              {authMode === 'login' ? t.loginTitle : t.signupTitle}
-            </h2>
-
-            {errorMsg && (
-              <div style={{ background: '#fff5f5', color: '#e53e3e', border: '1px solid #feb2b2', padding: '10px', borderRadius: '8px', marginBottom: '15px', textAlign: 'center' }}>
-                {errorMsg}
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-              <div>
-                <label style={{ display: 'block', marginBottom: '6px', color: '#4a5568', fontWeight: 'bold' }}>{t.emailLabel}</label>
-                <input 
-                  type="email" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder={t.emailPlaceholder}
-                  required
-                  style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e0', fontSize: '1rem', boxSizing: 'border-box' }}
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', marginBottom: '6px', color: '#4a5568', fontWeight: 'bold' }}>{lang === 'ar' ? 'كلمة المرور:' : 'Lösenord:'}</label>
-                <input 
-                  type="password" 
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder={t.passwordPlaceholder}
-                  required
-                  style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e0', fontSize: '1rem', boxSizing: 'border-box' }}
-                />
-              </div>
-
-              <button 
-                type="submit"
-                style={{ width: '100%', padding: '14px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '1rem', fontWeight: 'bold', cursor: 'pointer', marginTop: '10px' }}
-              >
-                {authMode === 'login' ? t.loginBtn : t.signupBtn}
-              </button>
-            </form>
-
-            <div style={{ textAlign: 'center', marginTop: '20px', fontSize: '0.95rem', color: '#718096' }}>
-              {authMode === 'login' ? (
-                <span>
-                  {t.noAccount}{' '}
-                  <button 
-                    type="button" 
-                    onClick={() => setAuthMode('signup')}
-                    style={{ background: 'none', border: 'none', color: '#2563eb', fontWeight: 'bold', cursor: 'pointer', textDecoration: 'underline' }}
-                  >
-                    {t.createOne}
-                  </button>
-                </span>
-              ) : (
-                <span>
-                  {t.hasAccount}{' '}
-                  <button 
-                    type="button" 
-                    onClick={() => setAuthMode('login')}
-                    style={{ background: 'none', border: 'none', color: '#2563eb', fontWeight: 'bold', cursor: 'pointer', textDecoration: 'underline' }}
-                  >
-                    {t.loginHere}
-                  </button>
-                </span>
-              )}
-            </div>
+        <div style={{ background: '#fff', padding: '25px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', border: '1px solid #edf2f7', marginBottom: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+            <h2 style={{ fontSize: '1.2rem', color: '#2d3748', margin: 0 }}>{t.accountInfo}</h2>
+            <button 
+              type="button"
+              onClick={handleLogout}
+              style={{ padding: '6px 12px', background: '#fff5f5', color: '#e53e3e', border: '1px solid #feb2b2', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
+            >
+              {t.logout}
+            </button>
           </div>
-        ) : (
-          <div>
-            <div style={{ background: '#fff', padding: '25px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', border: '1px solid #edf2f7', marginBottom: '20px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                <h2 style={{ fontSize: '1.2rem', color: '#2d3748', margin: 0 }}>{t.accountInfo}</h2>
-                <button 
-                  type="button"
-                  onClick={handleLogout}
-                  style={{ padding: '6px 12px', background: '#fff5f5', color: '#e53e3e', border: '1px solid #feb2b2', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
-                >
-                  {t.logout}
-                </button>
-              </div>
 
-              <p style={{ color: '#4a5568', margin: '8px 0' }}><strong>{t.emailLabel}</strong> {currentUser?.email}</p>
-              
-              <div style={{ marginTop: '15px', padding: '15px', borderRadius: '10px', background: currentUser?.isSubscribed ? '#e6fffa' : '#fff5f5', border: currentUser?.isSubscribed ? '1px solid #38b2ac' : '1px solid #feb2b2' }}>
-                <p style={{ margin: 0, fontWeight: 'bold', color: currentUser?.isSubscribed ? '#234e52' : '#9b2c2c' }}>
-                  {t.statusLabel} {currentUser?.isSubscribed ? t.activeStatus : t.inactiveStatus}
-                </p>
-              </div>
-            </div>
-
-            <div style={{ background: '#fff', padding: '25px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', border: '1px solid #edf2f7', textAlign: 'center' }}>
-              <h3 style={{ color: '#2b6cb0', marginBottom: '10px' }}>{t.subPrompt}</h3>
-              <p style={{ color: '#718096', marginBottom: '20px', lineHeight: '1.5' }}>{t.subDesc}</p>
-              
-              <button 
-                type="button"
-                onClick={() => window.location.href = t.stripeUrl}
-                style={{ width: '100%', padding: '14px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '1.05rem', fontWeight: 'bold', cursor: 'pointer' }}
-              >
-                {t.payBtn}
-              </button>
-            </div>
+          <p style={{ color: '#4a5568', margin: '8px 0' }}><strong>{t.emailLabel}</strong> {user.email}</p>
+          
+          <div style={{ marginTop: '15px', padding: '15px', borderRadius: '10px', background: '#fff5f5', border: '1px solid #feb2b2' }}>
+            <p style={{ margin: 0, fontWeight: 'bold', color: '#9b2c2c' }}>
+              {t.statusLabel} {t.inactiveStatus}
+            </p>
           </div>
-        )}
+        </div>
+
+        <div style={{ background: '#fff', padding: '25px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', border: '1px solid #edf2f7', textAlign: 'center' }}>
+          <h3 style={{ color: '#2b6cb0', marginBottom: '10px' }}>{t.subPrompt}</h3>
+          <p style={{ color: '#718096', marginBottom: '20px', lineHeight: '1.5' }}>{t.subDesc}</p>
+          
+          <button 
+            type="button"
+            onClick={() => window.location.href = t.stripeUrl}
+            style={{ width: '100%', padding: '14px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '1.05rem', fontWeight: 'bold', cursor: 'pointer' }}
+          >
+            {t.payBtn}
+          </button>
+        </div>
 
       </div>
     </>
