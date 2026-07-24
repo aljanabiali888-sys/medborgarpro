@@ -1,18 +1,35 @@
 import Head from 'next/head'
 import { useState } from 'react'
+import { useRouter } from 'next/router'
+import { supabase } from '../utils/supabaseClient'
 
 export default function Login() {
+  const router = useRouter()
   const [lang, setLang] = useState('ar')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     if (!email || !password) return
 
-    const user = { email: email.toLowerCase() }
+    const cleanEmail = email.toLowerCase().trim()
+
+    const { data: existingUser } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', cleanEmail)
+      .single()
+
+    if (!existingUser) {
+      await supabase.from('users').insert([
+        { email: cleanEmail, is_subscribed: false }
+      ])
+    }
+
+    const user = { email: cleanEmail }
     localStorage.setItem('user_session', JSON.stringify(user))
-    window.location.href = '/dashboard'
+    router.push('/dashboard')
   }
 
   return (
