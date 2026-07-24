@@ -1,20 +1,45 @@
 import Head from 'next/head'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
+import { supabase } from '../utils/supabaseClient'
 
 export default function Dashboard() {
   const router = useRouter()
   const [lang, setLang] = useState('ar')
   const [user, setUser] = useState(null)
+  const [isSubscribed, setIsSubscribed] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const saved = localStorage.getItem('user_session')
     if (!saved) {
-      router.push('/login') // إذا لم يسجل، يتجه مباشرة لصفحة الدخول
+      router.push('/login')
     } else {
-      setUser(JSON.parse(saved))
+      const userData = JSON.parse(saved)
+      setUser(userData)
+      checkSubscription(userData.email)
     }
   }, [])
+
+  const checkSubscription = async (email) => {
+    const { data } = await supabase
+      .from('users')
+      .select('is_subscribed')
+      .eq('email', email)
+      .single()
+
+    if (data) {
+      setIsSubscribed(data.is_subscribed)
+    }
+    setLoading(false)
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem('user_session')
+    router.push('/login')
+  }
+
+  if (loading || !user) return <div style={{ textAlign: 'center', marginTop: '50px' }}>Loading...</div>
 
   const t = {
     ar: {
@@ -48,13 +73,6 @@ export default function Dashboard() {
       stripeUrl: 'https://buy.stripe.com/aFacN66ULdH782da405Rm00'
     }
   }[lang]
-
-  const handleLogout = () => {
-    localStorage.removeItem('user_session')
-    router.push('/login')
-  }
-
-  if (!user) return null
 
   return (
     <>
@@ -113,25 +131,27 @@ export default function Dashboard() {
 
           <p style={{ color: '#4a5568', margin: '8px 0' }}><strong>{t.emailLabel}</strong> {user.email}</p>
           
-          <div style={{ marginTop: '15px', padding: '15px', borderRadius: '10px', background: '#fff5f5', border: '1px solid #feb2b2' }}>
-            <p style={{ margin: 0, fontWeight: 'bold', color: '#9b2c2c' }}>
-              {t.statusLabel} {t.inactiveStatus}
+          <div style={{ marginTop: '15px', padding: '15px', borderRadius: '10px', background: isSubscribed ? '#f0fff4' : '#fff5f5', border: `1px solid ${isSubscribed ? '#9ae6b4' : '#feb2b2'}` }}>
+            <p style={{ margin: 0, fontWeight: 'bold', color: isSubscribed ? '#22543d' : '#9b2c2c' }}>
+              {t.statusLabel} {isSubscribed ? t.activeStatus : t.inactiveStatus}
             </p>
           </div>
         </div>
 
-        <div style={{ background: '#fff', padding: '25px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', border: '1px solid #edf2f7', textAlign: 'center' }}>
-          <h3 style={{ color: '#2b6cb0', marginBottom: '10px' }}>{t.subPrompt}</h3>
-          <p style={{ color: '#718096', marginBottom: '20px', lineHeight: '1.5' }}>{t.subDesc}</p>
-          
-          <button 
-            type="button"
-            onClick={() => window.location.href = t.stripeUrl}
-            style={{ width: '100%', padding: '14px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '1.05rem', fontWeight: 'bold', cursor: 'pointer' }}
-          >
-            {t.payBtn}
-          </button>
-        </div>
+        {!isSubscribed && (
+          <div style={{ background: '#fff', padding: '25px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', border: '1px solid #edf2f7', textAlign: 'center' }}>
+            <h3 style={{ color: '#2b6cb0', marginBottom: '10px' }}>{t.subPrompt}</h3>
+            <p style={{ color: '#718096', marginBottom: '20px', lineHeight: '1.5' }}>{t.subDesc}</p>
+            
+            <button 
+              type="button"
+              onClick={() => window.location.href = t.stripeUrl}
+              style={{ width: '100%', padding: '14px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '1.05rem', fontWeight: 'bold', cursor: 'pointer' }}
+            >
+              {t.payBtn}
+            </button>
+          </div>
+        )}
 
       </div>
     </>
