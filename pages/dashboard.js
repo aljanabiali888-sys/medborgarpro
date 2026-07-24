@@ -1,5 +1,5 @@
 import Head from 'next/head'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export default function Dashboard() {
   const [lang, setLang] = useState('ar') // 'ar' or 'sv'
@@ -12,6 +12,16 @@ export default function Dashboard() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [currentUser, setCurrentUser] = useState(null)
+  const [errorMsg, setErrorMsg] = useState('')
+
+  // التحقق من الحساب المسجل محلياً عند تحميل الصفحة
+  useEffect(() => {
+    const savedUser = localStorage.getItem('medborgar_user')
+    if (savedUser) {
+      setCurrentUser(JSON.parse(savedUser))
+      setIsLoggedIn(true)
+    }
+  }, [])
 
   // نصوص اللغتين
   const t = {
@@ -25,7 +35,7 @@ export default function Dashboard() {
       activeStatus: '✅ نشط (وصول كامل لمدة شهر)',
       inactiveStatus: '❌ غير نشط / منتهي',
       subPrompt: 'اشترك الآن للحصول على وصول كامل لمدة شهر (30 يوماً)',
-      subDesc: 'احصل على كافة الأسئلة والدروس واختبارات المحاكاة للتحضير لاختبار المواطنة السويدية.',
+      subDesc: 'احصل على كافة الأسئلة والدروس وااختبارات المحاكاة للتحضير لاختبار المواطنة السويدية.',
       payBtn: 'تفعيل الاشتراك لمدة شهر 💳',
       logout: 'تسجيل الخروج 🚪',
       
@@ -73,27 +83,61 @@ export default function Dashboard() {
     }
   }[lang]
 
-  // التعامل مع تسجيل الدخول / التسجيل
+  // التعامل مع التسجيل / الدخول
   const handleAuthSubmit = (e) => {
     e.preventDefault()
+    setErrorMsg('')
+
     if (!email || !password) {
-      alert(lang === 'ar' ? 'يرجى إدخال البريد الإلكتروني وكلمة المرور' : 'Vänligen ange e-post och lösenord')
+      setErrorMsg(lang === 'ar' ? 'يرجى إدخال البريد الإلكتروني وكلمة المرور' : 'Vänligen ange e-post och lösenord')
       return
     }
-    
-    // حفظ المستخدم المسجل
-    setCurrentUser({
-      email: email,
-      isSubscribed: false
-    })
-    setIsLoggedIn(true)
+
+    // جلب الحسابات المخزنة محلياً
+    const usersDB = JSON.parse(localStorage.getItem('medborgar_users_db') || '[]')
+
+    if (authMode === 'signup') {
+      // فحص ما إذا كان البريد مسجلاً من قبل
+      const existingUser = usersDB.find(u => u.email.toLowerCase() === email.toLowerCase())
+      if (existingUser) {
+        setErrorMsg(lang === 'ar' ? 'هذا البريد الإلكتروني مسجل بالفعل! قم بتسجيل الدخول.' : 'E-postadressen är redan registrerad!')
+        return
+      }
+
+      // إنشاء حساب جديد
+      const newUser = {
+        email: email.toLowerCase(),
+        password: password,
+        isSubscribed: false
+      }
+
+      usersDB.push(newUser)
+      localStorage.setItem('medborgar_users_db', JSON.stringify(usersDB))
+      localStorage.setItem('medborgar_user', JSON.stringify(newUser))
+
+      setCurrentUser(newUser)
+      setIsLoggedIn(true)
+    } else {
+      // تسجيل الدخول
+      const user = usersDB.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password)
+      if (!user) {
+        setErrorMsg(lang === 'ar' ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة' : 'Felaktig e-post eller lösenord')
+        return
+      }
+
+      localStorage.setItem('medborgar_user', JSON.stringify(user))
+      setCurrentUser(user)
+      setIsLoggedIn(true)
+    }
   }
 
   const handleLogout = () => {
+    localStorage.removeItem('medborgar_user')
     setIsLoggedIn(false)
     setCurrentUser(null)
     setEmail('')
     setPassword('')
+    setErrorMsg('')
   }
 
   return (
@@ -157,6 +201,12 @@ export default function Dashboard() {
               {authMode === 'login' ? t.loginTitle : t.signupTitle}
             </h2>
 
+            {errorMsg && (
+              <div style={{ background: '#fff5f5', color: '#e53e3e', border: '1px solid #feb2b2', padding: '10px 15px', borderRadius: '8px', marginBottom: '15px', textAlign: 'center', fontSize: '0.9rem' }}>
+                {errorMsg}
+              </div>
+            )}
+
             <form onSubmit={handleAuthSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
               <div>
                 <label style={{ display: 'block', marginBottom: '6px', color: '#4a5568', fontWeight: 'bold' }}>{t.emailLabel}</label>
@@ -195,7 +245,7 @@ export default function Dashboard() {
                 <>
                   {t.noAccount}{' '}
                   <span 
-                    onClick={() => setAuthMode('signup')} 
+                    onClick={() => { setAuthMode('signup'); setErrorMsg(''); }} 
                     style={{ color: '#2563eb', fontWeight: 'bold', cursor: 'pointer', textDecoration: 'underline' }}
                   >
                     {t.createOne}
@@ -205,7 +255,7 @@ export default function Dashboard() {
                 <>
                   {t.hasAccount}{' '}
                   <span 
-                    onClick={() => setAuthMode('login')} 
+                    onClick={() => { setAuthMode('login'); setErrorMsg(''); }} 
                     style={{ color: '#2563eb', fontWeight: 'bold', cursor: 'pointer', textDecoration: 'underline' }}
                   >
                     {t.loginHere}
@@ -229,11 +279,11 @@ export default function Dashboard() {
                 </button>
               </div>
 
-              <p style={{ color: '#4a5568', margin: '8px 0' }}><strong>{t.emailLabel}</strong> {currentUser.email}</p>
+              <p style={{ color: '#4a5568', margin: '8px 0' }}><strong>{t.emailLabel}</strong> {currentUser?.email}</p>
               
-              <div style={{ marginTop: '15px', padding: '15px', borderRadius: '10px', background: currentUser.isSubscribed ? '#e6fffa' : '#fff5f5', border: currentUser.isSubscribed ? '1px solid #38b2ac' : '1px solid #feb2b2' }}>
-                <p style={{ margin: 0, fontWeight: 'bold', color: currentUser.isSubscribed ? '#234e52' : '#9b2c2c' }}>
-                  {t.statusLabel} {currentUser.isSubscribed ? t.activeStatus : t.inactiveStatus}
+              <div style={{ marginTop: '15px', padding: '15px', borderRadius: '10px', background: currentUser?.isSubscribed ? '#e6fffa' : '#fff5f5', border: currentUser?.isSubscribed ? '1px solid #38b2ac' : '1px solid #feb2b2' }}>
+                <p style={{ margin: 0, fontWeight: 'bold', color: currentUser?.isSubscribed ? '#234e52' : '#9b2c2c' }}>
+                  {t.statusLabel} {currentUser?.isSubscribed ? t.activeStatus : t.inactiveStatus}
                 </p>
               </div>
             </div>
