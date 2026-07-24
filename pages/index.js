@@ -240,7 +240,8 @@ export default function Home() {
               <p style={styles.chapterMeta}>{ch.count} {getText('سؤال تعليمي مع الشرح', 'frågor med förklaring', 'questions with explanations')}</p>
               
               <button 
-                onClick={() => alert(getText('قم بالاشتراك في باقة PRO لفتح هذا الفصل!', 'Lås upp med PRO-prenumeration!', 'Subscribe to PRO to unlock!'))}
+                onClick={() => window.location.href = 'https://buy.stripe.com/aFacN66ULdH782da405Rm00'}
+
                 style={styles.chapterBtn}
               >
                 🔒 {getText('ابدأ دراسة الفصل', 'Starta kapitel', 'Start Chapter')}
