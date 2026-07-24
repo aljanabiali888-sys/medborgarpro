@@ -8,7 +8,7 @@ export default function FreeTest() {
   const [score, setScore] = useState(0)
   const [showResult, setShowResult] = useState(false)
 
-  // الأسئلة باللغتين العربية والسويدية
+  // 20 سؤالاً باللغتين العربية والسويدية
   const questionsData = {
     ar: [
       { question: '1. ما هو نظام الحكم في السويد؟', options: ['جمهوري', 'ملكية دستورية ديمقراطية', 'دكتاتوري', 'فدرالي'], answer: 'ملكية دستورية ديمقراطية' },
@@ -20,7 +20,17 @@ export default function FreeTest() {
       { question: '7. من هو رئيس الدولة في السويد؟', options: ['رئيس الوزراء', 'الملك', 'رئيس البرلمان', 'وزير الخارجية'], answer: 'الملك' },
       { question: '8. ما اسم أطول نهر في السويد؟', options: ['Klarälven', 'Göta älv', 'Torne älv', 'Ume älv'], answer: 'Klarälven' },
       { question: '9. أي من التالي يعتبر حقاً من حقوق "Allemansrätten"؟', options: ['الصيد بدون رخصة', 'التجول والتخييم في الطبيعة بحرية', 'قطع الأشجار', 'قيادة السيارة في الغابات'], answer: 'التجول والتخييم في الطبيعة بحرية' },
-      { question: '10. ما هي العملة الرسمية في السويد؟', options: ['اليورو', 'الكرونة السويدية', 'الدولار', 'الباوند'], answer: 'الكرونة السويدية' }
+      { question: '10. ما هي العملة الرسمية في السويد؟', options: ['اليورو', 'الكرونة السويدية', 'الدولار', 'الباوند'], answer: 'الكرونة السويدية' },
+      { question: '11. من يقود الحكومة السويدية؟', options: ['الملك', 'رئيس الوزراء', 'رئيس البرلمان', 'المحافظ'], answer: 'رئيس الوزراء' },
+      { question: '12. ما هو القانون الأساسي الذي يحمي حرية الصحافة في السويد؟', options: ['Tryckfrihetsförordningen', 'Yttrandefrihetsgrundlagen', 'Regeringsformen', 'Successionsordningen'], answer: 'Tryckfrihetsförordningen' },
+      { question: '13. كم عدد المحافظات (Regioner) في السويد؟', options: ['15', '21', '25', '30'], answer: '21' },
+      { question: '14. في أي شهر يُقام اليوم الوطني للسويد؟', options: ['6 يونيو', '1 مايو', '15 أغسطس', '24 ديسمبر'], answer: '6 يونيو' },
+      { question: '15. ما هي أكبر جزيرة في السويد؟', options: ['Öland', 'Gotland', 'Orust', 'Värmdö'], answer: 'Gotland' },
+      { question: '16. ما هو أعلى جبل في السويد؟', options: ['Kebnekaise', 'Sarektjåhkkå', 'Akka', 'Sylarna'], answer: 'Kebnekaise' },
+      { question: '17. ما اسم الضريبة التي تُدفع للبلدية والمحافظة من الراتب؟', options: ['Kommunalskatt', 'Moms', 'Statlig skatt', 'Tull'], answer: 'Kommunalskatt' },
+      { question: '18. ما هي الهيئة المسؤولة عن الهجرة والإقامة في السويد؟', options: ['Skatteverket', 'Försäkringskassan', 'Migrationsverket', 'Arbetsförmedlingen'], answer: 'Migrationsverket' },
+      { question: '19. أي من التالين يُعتبر رمزاً تقليدياً شهيراً في الثقافة السويدية؟', options: ['حصان دالا (Dalahäst)', 'النسر الذهبي', 'شجرة الزيتون', 'الدب القطبي'], answer: 'حصان دالا (Dalahäst)' },
+      { question: '20. ما هي الهيئة المسؤولة عن تسجيل النفوس والضرائب في السويد؟', options: ['Migrationsverket', 'Skatteverket', 'Police', 'Tullverket'], answer: 'Skatteverket' }
     ],
     sv: [
       { question: '1. Vad är Sveriges statsskick?', options: ['Republik', 'Demokratisk konstitutionell monarki', 'Diktatur', 'Federation'], answer: 'Demokratisk konstitutionell monarki' },
@@ -32,7 +42,17 @@ export default function FreeTest() {
       { question: '7. Vem är Sveriges statschef?', options: ['Statsministern', 'Kungen', 'Talmannen', 'Utrikesministern'], answer: 'Kungen' },
       { question: '8. Vad heter Sveriges längsta flod/älv?', options: ['Klarälven', 'Göta älv', 'Torne älv', 'Ume älv'], answer: 'Klarälven' },
       { question: '9. Vad innebär Allemansrätten?', options: ['Fiska utan tillstånd', 'Rätt att röra sig fritt i naturen', 'Fälla träd', 'Köra bil i skogen'], answer: 'Rätt att röra sig fritt i naturen' },
-      { question: '10. Vad heter Sveriges officiella valuta?', options: ['Euro', 'Svenska kronor (SEK)', 'Dollar', 'Pund'], answer: 'Svenska kronor (SEK)' }
+      { question: '10. Vad heter Sveriges officiella valuta?', options: ['Euro', 'Svenska kronor (SEK)', 'Dollar', 'Pund'], answer: 'Svenska kronor (SEK)' },
+      { question: '11. Vem leder Sveriges regering?', options: ['Kungen', 'Statsministern', 'Talmannen', 'Landshövdingen'], answer: 'Statsministern' },
+      { question: '12. Vilken grundlag skyddar tryckfriheten i Sverige?', options: ['Tryckfrihetsförordningen', 'Yttrandefrihetsgrundlagen', 'Regeringsformen', 'Successionsordningen'], answer: 'Tryckfrihetsförordningen' },
+      { question: '13. Hur många regioner finns det i Sverige?', options: ['15', '21', '25', '30'], answer: '21' },
+      { question: '14. Vilket datum firas Sveriges nationaldag?', options: ['6 juni', '1 maj', '15 augusti', '24 december'], answer: '6 juni' },
+      { question: '15. Vilken är Sveriges största ö?', options: ['Öland', 'Gotland', 'Orust', 'Värmdö'], answer: 'Gotland' },
+      { question: '16. Vad heter Sveriges högsta berg?', options: ['Kebnekaise', 'Sarektjåhkkå', 'Akka', 'Sylarna'], answer: 'Kebnekaise' },
+      { question: '17. Vad kallas den skatt som betalas till kommun och region?', options: ['Kommunalskatt', 'Moms', 'Statlig skatt', 'Tull'], answer: 'Kommunalskatt' },
+      { question: '18. Vilken myndighet ansvarar för uppehållstillstånd och medborgarskap?', options: ['Skatteverket', 'Försäkringskassan', 'Migrationsverket', 'Arbetsförmedlingen'], answer: 'Migrationsverket' },
+      { question: '19. Vilken symbol är en känd traditionell del av svensk kultur?', options: ['Dalahäst', 'Kungsörn', 'Olivträd', 'Isbjörn'], answer: 'Dalahäst' },
+      { question: '20. Vilken myndighet ansvarar för folkbokföring i Sverige?', options: ['Migrationsverket', 'Skatteverket', 'Polisen', 'Tullverket'], answer: 'Skatteverket' }
     ]
   }
 
@@ -119,7 +139,7 @@ export default function FreeTest() {
           <div style={{ background: '#fff', padding: '30px', borderRadius: '16px', boxShadow: '0 10px 25px rgba(0,0,0,0.05)', border: '1px solid #edf2f7' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', color: '#718096', fontSize: '0.9rem', marginBottom: '15px' }}>
               <span>{lang === 'ar' ? `السؤال ${currentQuestion + 1} من ${currentQuestions.length}` : `Fråga ${currentQuestion + 1} av ${currentQuestions.length}`}</span>
-              <span>{lang === 'ar' ? 'اختبار مجاني' : 'Gratis test'}</span>
+              <span>{lang === 'ar' ? 'اختبار مجاني (20 سؤال)' : 'Gratis test (20 frågor)'}</span>
             </div>
 
             <h2 style={{ fontSize: '1.25rem', color: '#1a202c', marginBottom: '20px', lineHeight: '1.5' }}>
